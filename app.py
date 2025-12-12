@@ -38,7 +38,7 @@ def get_img_as_base64(file):
 logo_b64 = get_img_as_base64("Rlogo - Product Recommendation.png")
 logo_html = f'<img src="data:image/png;base64,{logo_b64}" class="header-logo">' if logo_b64 else '<span style="font-size: 30px;">🛒</span>'
 
-# --- CUSTOM CSS (FINAL MOBILE FIX) ---
+# --- CUSTOM CSS (THE NUCLEAR FIX) ---
 st.markdown(f"""
     <style>
     /* Global Settings */
@@ -46,7 +46,7 @@ st.markdown(f"""
         box-sizing: border-box;
     }}
 
-    /* 1. CUSTOM HEADER (Lower Z-Index) */
+    /* 1. CUSTOM HEADER (Base Layer) */
     .fixed-header {{
         position: fixed;
         top: 0;
@@ -55,7 +55,7 @@ st.markdown(f"""
         height: 90px;
         background-color: #f1f1f1 !important;
         color: #000000 !important;
-        z-index: 90; /* Lower than Sidebar (which is usually around 100) */
+        z-index: 1; /* Very low Z-index so everything sits on top */
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -76,53 +76,59 @@ st.markdown(f"""
         padding: 10px;
         font-size: 12px;
         border-top: 1px solid #ccc;
-        z-index: 90;
+        z-index: 1;
     }}
-
+    
     .footer a {{
         color: #0066cc !important;
         text-decoration: none;
         font-weight: bold;
     }}
 
-    /* 3. STREAMLIT HEADER & HAMBURGER MENU */
-    /* Make the default header transparent but keep the button clickable */
+    /* 3. STREAMLIT HAMBURGER MENU (Middle Layer) */
     header[data-testid="stHeader"] {{
         background: transparent !important;
-        z-index: 100 !important; /* Above custom header */
+        z-index: 50 !important; /* Higher than custom header so button works */
         height: 90px;
+        pointer-events: none; /* Let clicks pass through empty space */
     }}
     
-    /* Force the hamburger menu to be black and visible */
+    /* Make the button clickable and visible */
     header[data-testid="stHeader"] button {{
-        color: black !important;
-        z-index: 101 !important;
+        pointer-events: auto;
+        color: black !important; /* Force black color */
+        z-index: 55 !important;
+        display: block !important;
+    }}
+    
+    /* 4. SIDEBAR (Top Layer - The Boss) */
+    section[data-testid="stSidebar"] {{
+        z-index: 9999 !important; /* Highest priority */
     }}
 
-    /* 4. SIDEBAR BEHAVIOR (The Fix) */
+    /* 5. RESPONSIVE BEHAVIOR */
     
-    /* DESKTOP: Sidebar starts below header */
-    @media (min-width: 601px) {{
+    /* Desktop: Sidebar sits below header */
+    @media (min-width: 768px) {{
         section[data-testid="stSidebar"] {{
             top: 90px !important;
             height: calc(100vh - 90px) !important;
         }}
     }}
 
-    /* MOBILE: Sidebar covers everything */
-    @media (max-width: 600px) {{
+    /* Mobile: Sidebar covers EVERYTHING */
+    @media (max-width: 767px) {{
         section[data-testid="stSidebar"] {{
-            top: 0px !important;
-            height: 100vh !important;
-            z-index: 99999 !important; /* Super high Z-index to cover header */
+            top: 0px !important; /* Start at very top */
+            height: 100vh !important; /* Full height */
         }}
         
-        /* Shift logo right so it doesn't sit under the hamburger button */
+        /* Shift logo right to make room for menu button */
         .header-left {{
             margin-left: 50px; 
         }}
         
-        /* Adjust header height for mobile */
+        /* Adjust header height */
         .fixed-header {{
             height: 70px;
             padding: 0 10px;
@@ -135,7 +141,7 @@ st.markdown(f"""
         .block-container {{ padding-top: 80px; }}
     }}
 
-    /* 5. CONTENT PADDING */
+    /* 6. CONTENT PADDING */
     .block-container {{
         padding-top: 110px;
         padding-bottom: 80px;
@@ -174,7 +180,6 @@ st.markdown("""
 
 # --- MAIN APP LOGIC ---
 
-# Initialize Graph
 @st.cache_resource
 def load_graph():
     return ProductGraph("data.json")
