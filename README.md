@@ -11,7 +11,10 @@ When a user requests a product that is "Out of Stock," the system:
 3.  **Filters & Scores candidates** based on logical constraints (Price, Stock, Dietary Tags).
 4.  **Explains the decision** (e.g., "Same Brand," "Cheaper Option") using deterministic rules.
 
-##  How to Run
+##  Deployed App
+
+
+## Run Locally
 
 ### Prerequisites
 
@@ -49,13 +52,9 @@ The app will open in your browser at `http://localhost:8501`.
 
 -----
 ## Dataset 
-
-BigBasket Entire Product List" dataset from Kaggle.
-Link - https://www.kaggle.com/datasets/surajjha101/bigbasket-entire-product-list-28k-datapoints 
-
-## 1. data_conversion.py
-
-Converted csv file into a json file with Nodes and Edges defined.
+  * BigBasket Entire Product List" dataset from Kaggle.
+  * Link - https://www.kaggle.com/datasets/surajjha101/bigbasket-entire-product-list-28k-datapoints
+  * data_conversion.py converted csv file into a json file with Nodes and Edges defined.
 
 ## Knowledge Graph Design
 
@@ -74,7 +73,7 @@ Converted csv file into a json file with Nodes and Edges defined.
 
 -----
 
-## 🔍 Search & Reasoning Method
+## Search & Reasoning Method
 
 The system uses a **2-Hop Neighbor Search** strategy combined with a **Weighted Scoring Algorithm**.
 
@@ -100,14 +99,14 @@ Valid candidates are ranked based on a rule-based point system. The highest scor
 
 | Rule | Condition | Points | Human Explanation |
 | :--- | :--- | :--- | :--- |
-| **Brand Loyalty** | `candidate.brand == target.brand` | **+10** | "🔹 Same Brand" |
-| **Price Saver** | `candidate.price < target.price` | **+5** | "💰 Cheaper Option" |
-| **Premium** | `candidate.price > target.price` | **+0** | "💎 Premium Option" |
-| **Category** | `candidate.category == target.category` | **N/A** | "📂 Same Category" |
+| **Brand Loyalty** | `candidate.brand == target.brand` | **+10** | "Same Brand" |
+| **Price Saver** | `candidate.price < target.price` | **+5** | "Cheaper Option" |
+| **Premium** | `candidate.price > target.price` | **+0** | "Premium Option" |
+| **Category** | `candidate.category == target.category` | **N/A** | "Same Category" |
 
 -----
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 ├── app.py                   # Main Streamlit Frontend Application
