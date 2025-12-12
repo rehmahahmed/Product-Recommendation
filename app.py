@@ -1,0 +1,221 @@
+import streamlit as st
+from graph_engine import ProductGraph
+import os
+import base64
+
+# --- PAGE CONFIGURATION ---
+favicon = "Rlogo - Product Recommendation.png"
+if not os.path.exists(favicon):
+    favicon = "🛒"
+
+st.set_page_config(
+    page_title="Shopkeeper AI | Rehmah Projects",
+    page_icon=favicon,
+    layout="wide"
+)
+
+# --- HELPER: IMAGE TO BASE64 ---
+def get_img_as_base64(file):
+    try:
+        with open(file, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except Exception:
+        return None
+
+logo_b64 = get_img_as_base64("Rlogo - Product Recommendation.png")
+logo_html = f'<img src="data:image/png;base64,{logo_b64}" class="header-logo">' if logo_b64 else '<span style="font-size: 30px;">🛒</span>'
+
+# --- CUSTOM CSS FOR FULL WIDTH LAYOUT ---
+st.markdown(f"""
+    <style>
+    /* 1. HIDE STANDARD STREAMLIT HEADER */
+    header[data-testid="stHeader"] {{
+        visibility: hidden;
+    }}
+    
+    /* 2. ADJUST TOP PADDING FOR CONTENT */
+    .block-container {{
+        padding-top: 120px; /* Push content down so header doesn't cover it */
+        padding-bottom: 80px;
+    }}
+    
+    /* 3. FIXED HEADER (Top Bar) */
+    .fixed-header {{
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 90px;
+        background-color: #f1f1f1 !important; /* Force Light Grey */
+        color: #000000 !important; /* Force Black Text */
+        z-index: 1000000; /* Ensure it stays ON TOP of sidebar */
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 30px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        font-family: sans-serif;
+    }}
+    
+    .header-left {{
+        display: flex;
+        align-items: center;
+    }}
+
+    .header-logo {{
+        height: 60px;
+        width: auto;
+        margin-right: 15px;
+    }}
+    
+    .header-title {{
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+    }}
+
+    .header-title h1 {{
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: #000000 !important;
+    }}
+    
+    .header-title span {{
+        font-size: 14px;
+        color: #555555 !important;
+    }}
+    
+    /* Button Styling */
+    .header-btn {{
+        background-color:#110945;
+        color: white !important;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background 0.3s;
+        border: none;
+    }}
+    
+    .header-btn:hover {{
+        background-color: #110945;
+        color: white !important;
+    }}
+
+    /* 4. FIXED FOOTER (Bottom Bar) */
+    .footer {{
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: #f1f1f1 !important;
+        color: #333 !important;
+        text-align: center;
+        padding: 15px;
+        font-size: 14px;
+        border-top: 1px solid #ccc;
+        z-index: 1000000;
+    }}
+    
+    .footer a {{
+        color: #0066cc !important;
+        text-decoration: none;
+        font-weight: bold;
+    }}
+    </style>
+""", unsafe_allow_html=True)
+
+# --- INJECT HEADER HTML ---
+st.markdown(f"""
+    <div class="fixed-header">
+        <div class="header-left">
+            {logo_html}
+            <div class="header-title">
+                <h1>Product Recommendation App</h1>
+            </div>
+        </div>
+        <a href="https://rehmahprojects.com/projects.html" target="_blank" class="header-btn">More Projects</a>
+    </div>
+""", unsafe_allow_html=True)
+
+# --- MAIN APP LOGIC ---
+
+# Initialize Graph
+@st.cache_resource
+def load_graph():
+    return ProductGraph("data.json")
+
+try:
+    kg = load_graph()
+except FileNotFoundError:
+    st.error("❌ 'data.json' not found. Please run the converter script first.")
+    st.stop()
+
+# --- SIDEBAR INPUTS ---
+# Add extra padding to sidebar so top items aren't hidden by the header
+st.sidebar.markdown('<div style="margin-top: 60px;"></div>', unsafe_allow_html=True)
+st.sidebar.header("User Requirements")
+product_map = kg.get_all_product_names()
+
+if not product_map:
+    st.sidebar.error("No products found in the graph.")
+    st.stop()
+
+selected_product_name = st.sidebar.selectbox("Select Product", list(product_map.values()))
+selected_product_id = [k for k, v in product_map.items() if v == selected_product_name][0]
+
+max_price = st.sidebar.number_input("Max Price (₹)", min_value=10, value=500, step=10)
+required_tags = st.sidebar.multiselect("Required Attributes", ["Oil", "Rice", "Masala", "Snacks", "Dairy"])
+
+# --- RESULTS SECTION ---
+if st.sidebar.button("Find Product"):
+    product_details = kg.get_product_details(selected_product_id)
+    
+    if product_details.get('in_stock', False):
+        st.success(f"✅ **{product_details['name']}** is available!")
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            st.metric("Price", f"₹{product_details['price']}")
+        with c2:
+            st.metric("Status", "In Stock", delta_color="normal")
+            
+        st.json(product_details)
+    else:
+        st.error(f"❌ {product_details['name']} is **Out of Stock**.")
+        st.markdown("### 🔍 Finding Best Alternatives (Graph Search)...")
+        
+        substitutes = kg.find_substitutes(selected_product_id, max_price, required_tags)
+        
+        if not substitutes:
+            st.warning("No suitable alternatives found matching your constraints.")
+        else:
+            cols = st.columns(len(substitutes))
+            for idx, sub in enumerate(substitutes):
+                with cols[idx]:
+                    with st.container(border=True):
+                        st.subheader(sub['name'])
+                        st.write(f"**Price:** ₹{sub['price']}")
+                        
+                        st.markdown("**Why this?**")
+                        for rule in sub['reasons']:
+                            if rule == 'same_brand_match':
+                                st.caption(f"🔹 Same Brand")
+                            elif rule == 'cheaper_option':
+                                st.caption(f"💰 Cheaper Option")
+                            elif rule == 'same_category':
+                                st.caption(f"📂 Same Category")
+                            elif rule == 'diff_brand_alternative':
+                                st.caption(f"🔸 Different Brand")
+                            elif rule == 'premium_option':
+                                st.caption(f"💎 Premium Option")
+
+# --- FOOTER SECTION ---
+st.markdown("""
+    <div class="footer">
+        <p>Powered by <b>Rehmah Projects</b> | 
+        <a href="mailto:admin@rehmahprojects.com">admin@rehmahprojects.com</a></p>
+    </div>
+""", unsafe_allow_html=True)
