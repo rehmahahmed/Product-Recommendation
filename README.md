@@ -2,8 +2,6 @@
 
 A **Classical AI** application that uses a **Knowledge Graph (KG)** to suggest logical product substitutes when an item is out of stock. Built with **Python**, **NetworkX**, and **Streamlit**.
 
-## 📌 Overview
-
 This project implements a product substitution assistant without using Black-box Machine Learning or LLMs. Instead, it relies on **explicit graph reasoning** and **rule-based logic**.
 
 When a user requests a product that is "Out of Stock," the system:
@@ -13,7 +11,7 @@ When a user requests a product that is "Out of Stock," the system:
 3.  **Filters & Scores candidates** based on logical constraints (Price, Stock, Dietary Tags).
 4.  **Explains the decision** (e.g., "Same Brand," "Cheaper Option") using deterministic rules.
 
-## 🚀 How to Run Locally
+##  How to Run
 
 ### Prerequisites
 
@@ -50,10 +48,16 @@ streamlit run app.py
 The app will open in your browser at `http://localhost:8501`.
 
 -----
+## Dataset 
 
-## 🧠 Knowledge Graph Design
+BigBasket Entire Product List" dataset from Kaggle.
+Link - https://www.kaggle.com/datasets/surajjha101/bigbasket-entire-product-list-28k-datapoints 
 
-The backend is powered by **NetworkX**. We model the retail inventory as a directed graph.
+## 1. data_conversion.py
+
+Converted csv file into a json file with Nodes and Edges defined.
+
+## Knowledge Graph Design
 
 ### Nodes (Entities)
 
@@ -120,5 +124,6 @@ Valid candidates are ranked based on a rule-based point system. The highest scor
 
 **Rehmah Ahmed Batki**
 
-  * [Portfolio](https://rehmahprojects.com)
-  * [Email](mailto:admin@rehmahprojects.com)
+  * Who am I? https://rehmahprojects.com
+  * More Projects- https://rehmahprojects.com/projects.html
+  * Lets Talk- admin@rehmahprojects.com
