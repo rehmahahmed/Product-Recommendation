@@ -2,6 +2,7 @@ import streamlit as st
 from graph_engine import ProductGraph
 import os
 import base64
+import streamlit.components.v1 as components 
 
 # --- PAGE CONFIGURATION ---
 favicon = "Rlogo - Product Recommendation.png"
@@ -13,21 +14,18 @@ st.set_page_config(
     page_icon=favicon,
     layout="wide"
 )
-import streamlit as st
-import streamlit.components.v1 as components  # <--- Add this import
+
 # --- GOOGLE ANALYTICS TRACKING ---
-# We use a custom HTML component to inject the script.
-# height=0 makes it invisible.
 components.html("""
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-88H1ZZYWY2"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-
         gtag('config', 'G-88H1ZZYWY2');
     </script>
 """, height=0)
+
 # --- HELPER: IMAGE TO BASE64 ---
 def get_img_as_base64(file):
     try:
@@ -40,30 +38,45 @@ def get_img_as_base64(file):
 logo_b64 = get_img_as_base64("Rlogo - Product Recommendation.png")
 logo_html = f'<img src="data:image/png;base64,{logo_b64}" class="header-logo">' if logo_b64 else '<span style="font-size: 30px;">🛒</span>'
 
-# --- CUSTOM CSS FOR FULL WIDTH LAYOUT ---
+# --- CUSTOM CSS FOR FULL WIDTH LAYOUT (MOBILE FIX) ---
 st.markdown(f"""
     <style>
-    /* 1. HIDE STANDARD STREAMLIT HEADER */
+    /* Global box-sizing */
+    * {{
+        box-sizing: border-box;
+    }}
+
+    /* 1. MAKE STANDARD HEADER TRANSPARENT (BUT CLICKABLE) */
+    /* We do NOT hide it, or we lose the mobile menu button! */
     header[data-testid="stHeader"] {{
-        visibility: hidden;
+        background-color: transparent !important;
+        pointer-events: none; /* Let clicks pass through empty areas */
+    }}
+    
+    /* Make the hamburger menu button clickable again */
+    header[data-testid="stHeader"] button {{
+        pointer-events: auto;
+        color: black !important; /* Ensure menu icon is visible on white background */
+        z-index: 100002; /* Topmost layer */
     }}
     
     /* 2. ADJUST TOP PADDING FOR CONTENT */
     .block-container {{
-        padding-top: 120px; /* Push content down so header doesn't cover it */
+        padding-top: 100px; 
         padding-bottom: 80px;
     }}
     
-    /* 3. FIXED HEADER (Top Bar) */
+    /* 3. FIXED HEADER (Custom Navbar) */
     .fixed-header {{
         position: fixed;
         top: 0;
         left: 0;
-        width: 100vw;
+        width: 100%;
         height: 90px;
-        background-color: #f1f1f1 !important; /* Force Light Grey */
-        color: #000000 !important; /* Force Black Text */
-        z-index: 1000000; /* Ensure it stays ON TOP of sidebar */
+        background-color: #f1f1f1 !important;
+        color: #000000 !important;
+        /* Lower Z-Index so Sidebar slides OVER it */
+        z-index: 1000; 
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -72,9 +85,16 @@ st.markdown(f"""
         font-family: sans-serif;
     }}
     
+    /* 4. FORCE SIDEBAR TO BE ON TOP */
+    section[data-testid="stSidebar"] {{
+        z-index: 100001 !important; /* Must be higher than fixed-header */
+    }}
+
     .header-left {{
         display: flex;
         align-items: center;
+        overflow: hidden;
+        margin-left: 40px; /* Space for the hamburger menu */
     }}
 
     .header-logo {{
@@ -83,27 +103,16 @@ st.markdown(f"""
         margin-right: 15px;
     }}
     
-    .header-title {{
-        display: flex;
-        flex-direction: column;
-        line-height: 1.2;
-    }}
-
     .header-title h1 {{
         margin: 0;
         font-size: 24px;
         font-weight: 700;
         color: #000000 !important;
+        white-space: nowrap;
     }}
     
-    .header-title span {{
-        font-size: 14px;
-        color: #555555 !important;
-    }}
-    
-    /* Button Styling */
     .header-btn {{
-        background-color:#110945;
+        background-color: #110945;
         color: white !important;
         padding: 10px 20px;
         border-radius: 8px;
@@ -111,14 +120,46 @@ st.markdown(f"""
         font-weight: bold;
         transition: background 0.3s;
         border: none;
+        white-space: nowrap;
     }}
     
     .header-btn:hover {{
-        background-color: #110945;
+        background-color: #2a1b70;
         color: white !important;
     }}
 
-    /* 4. FIXED FOOTER (Bottom Bar) */
+    /* --- MOBILE RESPONSIVENESS --- */
+    @media only screen and (max-width: 600px) {{
+        .fixed-header {{
+            height: 70px;
+            padding: 0 10px;
+        }}
+        
+        .header-logo {{
+            height: 40px;
+            margin-right: 8px;
+        }}
+        
+        .header-title h1 {{
+            font-size: 16px;
+        }}
+        
+        .header-btn {{
+            font-size: 12px;
+            padding: 8px 12px;
+        }}
+        
+        .block-container {{
+            padding-top: 80px;
+        }}
+
+        /* Adjust margin for hamburger menu on mobile */
+        .header-left {{
+            margin-left: 50px; 
+        }}
+    }}
+
+    /* 5. FIXED FOOTER */
     .footer {{
         position: fixed;
         left: 0;
@@ -127,10 +168,10 @@ st.markdown(f"""
         background-color: #f1f1f1 !important;
         color: #333 !important;
         text-align: center;
-        padding: 15px;
-        font-size: 14px;
+        padding: 10px;
+        font-size: 12px;
         border-top: 1px solid #ccc;
-        z-index: 1000000;
+        z-index: 1000;
     }}
     
     .footer a {{
@@ -147,7 +188,7 @@ st.markdown(f"""
         <div class="header-left">
             {logo_html}
             <div class="header-title">
-                <h1>Product Recommendation App</h1>
+                <h1>Product Rec. App</h1>
             </div>
         </div>
         <a href="https://rehmahprojects.com/projects.html" target="_blank" class="header-btn">More Projects</a>
@@ -168,7 +209,8 @@ except FileNotFoundError:
     st.stop()
 
 # --- SIDEBAR INPUTS ---
-# Add extra padding to sidebar so top items aren't hidden by the header
+# Important: On mobile, we don't need the spacer as much if the menu covers the header,
+# but on desktop we still need to push content down.
 st.sidebar.markdown('<div style="margin-top: 60px;"></div>', unsafe_allow_html=True)
 st.sidebar.header("User Requirements")
 product_map = kg.get_all_product_names()
@@ -232,5 +274,4 @@ st.markdown("""
         <p>Powered by <b>Rehmah Projects</b> | 
         <a href="mailto:admin@rehmahprojects.com">admin@rehmahprojects.com</a></p>
     </div>
-
 """, unsafe_allow_html=True)
