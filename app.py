@@ -13,7 +13,21 @@ st.set_page_config(
     page_icon=favicon,
     layout="wide"
 )
+import streamlit as st
+import streamlit.components.v1 as components  # <--- Add this import
+# --- GOOGLE ANALYTICS TRACKING ---
+# We use a custom HTML component to inject the script.
+# height=0 makes it invisible.
+components.html("""
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-88H1ZZYWY2"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
 
+        gtag('config', 'G-88H1ZZYWY2');
+    </script>
+""", height=0)
 # --- HELPER: IMAGE TO BASE64 ---
 def get_img_as_base64(file):
     try:
@@ -218,4 +232,5 @@ st.markdown("""
         <p>Powered by <b>Rehmah Projects</b> | 
         <a href="mailto:admin@rehmahprojects.com">admin@rehmahprojects.com</a></p>
     </div>
+
 """, unsafe_allow_html=True)
