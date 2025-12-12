@@ -59,4 +59,5 @@ def convert_csv_to_json(csv_file_path, output_file_path, limit=500):
     print(f"Success! Created {output_file_path} with explicit attribute nodes.")
 
 if __name__ == "__main__":
-    convert_csv_to_json("/content/drive/MyDrive/Projects/Product Recommendation/BigBasket Products.csv", "/content/drive/MyDrive/Projects/Product Recommendation/data.json")
+
+    convert_csv_to_json("BigBasket Products.csv", "data.json")
