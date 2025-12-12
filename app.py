@@ -38,35 +38,15 @@ def get_img_as_base64(file):
 logo_b64 = get_img_as_base64("Rlogo - Product Recommendation.png")
 logo_html = f'<img src="data:image/png;base64,{logo_b64}" class="header-logo">' if logo_b64 else '<span style="font-size: 30px;">🛒</span>'
 
-# --- CUSTOM CSS FOR FULL WIDTH LAYOUT (MOBILE FIX) ---
+# --- CUSTOM CSS (FINAL DESKTOP + MOBILE FIX) ---
 st.markdown(f"""
     <style>
-    /* Global box-sizing */
+    /* Global Settings */
     * {{
         box-sizing: border-box;
     }}
 
-    /* 1. MAKE STANDARD HEADER TRANSPARENT (BUT CLICKABLE) */
-    /* We do NOT hide it, or we lose the mobile menu button! */
-    header[data-testid="stHeader"] {{
-        background-color: transparent !important;
-        pointer-events: none; /* Let clicks pass through empty areas */
-    }}
-    
-    /* Make the hamburger menu button clickable again */
-    header[data-testid="stHeader"] button {{
-        pointer-events: auto;
-        color: black !important; /* Ensure menu icon is visible on white background */
-        z-index: 100002; /* Topmost layer */
-    }}
-    
-    /* 2. ADJUST TOP PADDING FOR CONTENT */
-    .block-container {{
-        padding-top: 100px; 
-        padding-bottom: 80px;
-    }}
-    
-    /* 3. FIXED HEADER (Custom Navbar) */
+    /* 1. HEADER & FOOTER (High Z-Index on Desktop) */
     .fixed-header {{
         position: fixed;
         top: 0;
@@ -75,8 +55,7 @@ st.markdown(f"""
         height: 90px;
         background-color: #f1f1f1 !important;
         color: #000000 !important;
-        /* Lower Z-Index so Sidebar slides OVER it */
-        z-index: 1000; 
+        z-index: 100000; /* High Z-index ensures it sits over main content */
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -84,82 +63,7 @@ st.markdown(f"""
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         font-family: sans-serif;
     }}
-    
-    /* 4. FORCE SIDEBAR TO BE ON TOP */
-    section[data-testid="stSidebar"] {{
-        z-index: 100001 !important; /* Must be higher than fixed-header */
-    }}
 
-    .header-left {{
-        display: flex;
-        align-items: center;
-        overflow: hidden;
-        margin-left: 40px; /* Space for the hamburger menu */
-    }}
-
-    .header-logo {{
-        height: 60px;
-        width: auto;
-        margin-right: 15px;
-    }}
-    
-    .header-title h1 {{
-        margin: 0;
-        font-size: 24px;
-        font-weight: 700;
-        color: #000000 !important;
-        white-space: nowrap;
-    }}
-    
-    .header-btn {{
-        background-color: #110945;
-        color: white !important;
-        padding: 10px 20px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: bold;
-        transition: background 0.3s;
-        border: none;
-        white-space: nowrap;
-    }}
-    
-    .header-btn:hover {{
-        background-color: #2a1b70;
-        color: white !important;
-    }}
-
-    /* --- MOBILE RESPONSIVENESS --- */
-    @media only screen and (max-width: 600px) {{
-        .fixed-header {{
-            height: 70px;
-            padding: 0 10px;
-        }}
-        
-        .header-logo {{
-            height: 40px;
-            margin-right: 8px;
-        }}
-        
-        .header-title h1 {{
-            font-size: 16px;
-        }}
-        
-        .header-btn {{
-            font-size: 12px;
-            padding: 8px 12px;
-        }}
-        
-        .block-container {{
-            padding-top: 80px;
-        }}
-
-        /* Adjust margin for hamburger menu on mobile */
-        .header-left {{
-            margin-left: 50px; 
-        }}
-    }}
-
-    /* 5. FIXED FOOTER */
     .footer {{
         position: fixed;
         left: 0;
@@ -171,14 +75,75 @@ st.markdown(f"""
         padding: 10px;
         font-size: 12px;
         border-top: 1px solid #ccc;
-        z-index: 1000;
+        z-index: 100000;
     }}
-    
+
     .footer a {{
         color: #0066cc !important;
         text-decoration: none;
         font-weight: bold;
     }}
+
+    /* 2. ADJUST MAIN CONTENT */
+    .block-container {{
+        padding-top: 110px; /* Push content down so header doesn't hide it */
+        padding-bottom: 80px;
+    }}
+
+    /* 3. SIDEBAR FIXES (The Critical Part) */
+    
+    /* Make the Sidebar start BELOW the header on Desktop */
+    section[data-testid="stSidebar"] {{
+        top: 90px !important; /* Move sidebar down by height of header */
+        height: calc(100vh - 90px) !important; /* Adjust height */
+        z-index: 99999 !important; /* Just below the header */
+    }}
+
+    /* 4. STREAMLIT DEFAULT HEADER (Hamburger Menu) */
+    header[data-testid="stHeader"] {{
+        background: transparent !important;
+        z-index: 100001 !important; /* Button must be ON TOP of everything */
+        height: 90px; /* Match our custom header height */
+    }}
+    
+    /* Move hamburger button to right position if needed */
+    header[data-testid="stHeader"] button {{
+        color: black !important; 
+    }}
+
+    /* --- MOBILE SPECIFIC OVERRIDES --- */
+    @media only screen and (max-width: 600px) {{
+        /* On mobile, Sidebar must cover everything */
+        section[data-testid="stSidebar"] {{
+            top: 0px !important;
+            height: 100vh !important;
+            z-index: 100002 !important; /* On top of header */
+        }}
+        
+        /* Adjust Header for Mobile */
+        .fixed-header {{
+            height: 70px;
+            padding: 0 10px;
+            z-index: 1000; /* Lower z-index so sidebar can cover it */
+        }}
+
+        .header-logo {{ height: 40px; margin-right: 8px; }}
+        .header-title h1 {{ font-size: 16px; }}
+        .header-btn {{ font-size: 12px; padding: 8px 12px; }}
+        
+        .block-container {{ padding-top: 80px; }}
+        
+        /* Shift logo right to avoid overlapping hamburger menu */
+        .header-left {{ margin-left: 50px; }}
+    }}
+
+    /* Header Styling Details */
+    .header-left {{ display: flex; align-items: center; overflow: hidden; }}
+    .header-logo {{ height: 60px; width: auto; margin-right: 15px; }}
+    .header-title h1 {{ margin: 0; font-size: 24px; font-weight: 700; color: #000; white-space: nowrap; }}
+    .header-btn {{ background-color: #110945; color: white !important; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; border: none; white-space: nowrap; }}
+    .header-btn:hover {{ background-color: #2a1b70; color: white !important; }}
+
     </style>
 """, unsafe_allow_html=True)
 
@@ -192,6 +157,14 @@ st.markdown(f"""
             </div>
         </div>
         <a href="https://rehmahprojects.com/projects.html" target="_blank" class="header-btn">More Projects</a>
+    </div>
+""", unsafe_allow_html=True)
+
+# --- INJECT FOOTER HTML ---
+st.markdown("""
+    <div class="footer">
+        <p>Powered by <b>Rehmah Projects</b> | 
+        <a href="mailto:admin@rehmahprojects.com">admin@rehmahprojects.com</a></p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -209,9 +182,6 @@ except FileNotFoundError:
     st.stop()
 
 # --- SIDEBAR INPUTS ---
-# Important: On mobile, we don't need the spacer as much if the menu covers the header,
-# but on desktop we still need to push content down.
-st.sidebar.markdown('<div style="margin-top: 60px;"></div>', unsafe_allow_html=True)
 st.sidebar.header("User Requirements")
 product_map = kg.get_all_product_names()
 
@@ -267,11 +237,3 @@ if st.sidebar.button("Find Product"):
                                 st.caption(f"🔸 Different Brand")
                             elif rule == 'premium_option':
                                 st.caption(f"💎 Premium Option")
-
-# --- FOOTER SECTION ---
-st.markdown("""
-    <div class="footer">
-        <p>Powered by <b>Rehmah Projects</b> | 
-        <a href="mailto:admin@rehmahprojects.com">admin@rehmahprojects.com</a></p>
-    </div>
-""", unsafe_allow_html=True)
