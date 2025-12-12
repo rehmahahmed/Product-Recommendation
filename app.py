@@ -38,7 +38,7 @@ def get_img_as_base64(file):
 logo_b64 = get_img_as_base64("Rlogo - Product Recommendation.png")
 logo_html = f'<img src="data:image/png;base64,{logo_b64}" class="header-logo">' if logo_b64 else '<span style="font-size: 30px;">🛒</span>'
 
-# --- CUSTOM CSS (FINAL CLEANUP) ---
+# --- CUSTOM CSS (FINAL UI FIXES) ---
 st.markdown(f"""
     <style>
     /* 0. RESET & BASICS */
@@ -46,7 +46,7 @@ st.markdown(f"""
         box-sizing: border-box;
     }}
     
-    /* 1. HIDE DEFAULT STREAMLIT BUTTONS (The "Clone" & "Deploy" buttons) */
+    /* 1. HIDE DEFAULT STREAMLIT BUTTONS */
     div[data-testid="stToolbar"] {{
         display: none !important;
         visibility: hidden !important;
@@ -57,7 +57,7 @@ st.markdown(f"""
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%; /* Fixes the extra space on right */
+        width: 100%;
         height: 90px;
         background-color: #f1f1f1 !important;
         color: #000000 !important;
@@ -71,7 +71,7 @@ st.markdown(f"""
         margin: 0;
     }}
 
-    /* 3. CUSTOM FOOTER */
+    /* 3. CUSTOM FOOTER (Highest Priority) */
     .footer {{
         position: fixed;
         left: 0;
@@ -83,7 +83,8 @@ st.markdown(f"""
         padding: 10px;
         font-size: 12px;
         border-top: 1px solid #ccc;
-        z-index: 1;
+        /* Fix: Z-Index higher than Sidebar so it sits on top */
+        z-index: 2000000 !important; 
     }}
     
     .footer a {{
@@ -92,7 +93,7 @@ st.markdown(f"""
         font-weight: bold;
     }}
 
-    /* 4. STREAMLIT HAMBURGER MENU (Clickable) */
+    /* 4. STREAMLIT HAMBURGER MENU */
     header[data-testid="stHeader"] {{
         background: transparent !important;
         z-index: 50 !important;
@@ -107,9 +108,10 @@ st.markdown(f"""
         display: block !important;
     }}
     
-    /* 5. SIDEBAR (The Absolute Top Layer) */
+    /* 5. SIDEBAR (Middle Layer) */
     section[data-testid="stSidebar"] {{
-        z-index: 999999 !important; /* Covers EVERYTHING */
+        /* Z-Index lower than Footer (2000000) but higher than Header (1) */
+        z-index: 999999 !important; 
     }}
 
     /* 6. RESPONSIVE RULES */
@@ -133,17 +135,24 @@ st.markdown(f"""
         /* Adjust Header Layout */
         .fixed-header {{
             height: 70px;
-            padding: 0 15px; /* Tighter padding */
+            padding: 0 10px; /* Minimal padding */
         }}
         
-        /* Logo Position: Slight left margin to clear hamburger menu */
+        /* Fix: Removed the left margin that was creating space */
         .header-left {{
-            margin-left: 45px; 
+            margin-left: 0px !important; 
             display: flex;
             align-items: center;
         }}
         
-        .header-logo {{ height: 35px; margin-right: 8px; }}
+        /* Make sure logo doesn't collide with hamburger if it's there */
+        /* You can adjust this to 35px if it overlaps the menu button too much */
+        .header-logo {{ 
+            height: 35px; 
+            margin-right: 8px; 
+            margin-left: 40px; /* Small space just for the menu button */
+        }}
+        
         .header-title h1 {{ font-size: 14px; margin: 0; }}
         
         /* Smaller "More Projects" Button */
