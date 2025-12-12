@@ -38,33 +38,40 @@ def get_img_as_base64(file):
 logo_b64 = get_img_as_base64("Rlogo - Product Recommendation.png")
 logo_html = f'<img src="data:image/png;base64,{logo_b64}" class="header-logo">' if logo_b64 else '<span style="font-size: 30px;">🛒</span>'
 
-# --- CUSTOM CSS (THE NUCLEAR FIX) ---
+# --- CUSTOM CSS (FINAL CLEANUP) ---
 st.markdown(f"""
     <style>
-    /* Global Settings */
+    /* 0. RESET & BASICS */
     * {{
         box-sizing: border-box;
     }}
-
-    /* 1. CUSTOM HEADER (Base Layer) */
+    
+    /* 1. HIDE DEFAULT STREAMLIT BUTTONS (The "Clone" & "Deploy" buttons) */
+    div[data-testid="stToolbar"] {{
+        display: none !important;
+        visibility: hidden !important;
+    }}
+    
+    /* 2. CUSTOM HEADER (Base Layer) */
     .fixed-header {{
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
+        width: 100%; /* Fixes the extra space on right */
         height: 90px;
         background-color: #f1f1f1 !important;
         color: #000000 !important;
-        z-index: 1; /* Very low Z-index so everything sits on top */
+        z-index: 1; /* Lowest priority */
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 0 30px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         font-family: sans-serif;
+        margin: 0;
     }}
 
-    /* 2. CUSTOM FOOTER */
+    /* 3. CUSTOM FOOTER */
     .footer {{
         position: fixed;
         left: 0;
@@ -85,30 +92,29 @@ st.markdown(f"""
         font-weight: bold;
     }}
 
-    /* 3. STREAMLIT HAMBURGER MENU (Middle Layer) */
+    /* 4. STREAMLIT HAMBURGER MENU (Clickable) */
     header[data-testid="stHeader"] {{
         background: transparent !important;
-        z-index: 50 !important; /* Higher than custom header so button works */
+        z-index: 50 !important;
         height: 90px;
-        pointer-events: none; /* Let clicks pass through empty space */
+        pointer-events: none; 
     }}
     
-    /* Make the button clickable and visible */
     header[data-testid="stHeader"] button {{
         pointer-events: auto;
-        color: black !important; /* Force black color */
+        color: black !important;
         z-index: 55 !important;
         display: block !important;
     }}
     
-    /* 4. SIDEBAR (Top Layer - The Boss) */
+    /* 5. SIDEBAR (The Absolute Top Layer) */
     section[data-testid="stSidebar"] {{
-        z-index: 9999 !important; /* Highest priority */
+        z-index: 999999 !important; /* Covers EVERYTHING */
     }}
 
-    /* 5. RESPONSIVE BEHAVIOR */
+    /* 6. RESPONSIVE RULES */
     
-    /* Desktop: Sidebar sits below header */
+    /* Desktop */
     @media (min-width: 768px) {{
         section[data-testid="stSidebar"] {{
             top: 90px !important;
@@ -116,38 +122,43 @@ st.markdown(f"""
         }}
     }}
 
-    /* Mobile: Sidebar covers EVERYTHING */
+    /* Mobile */
     @media (max-width: 767px) {{
+        /* Sidebar covers full screen on mobile */
         section[data-testid="stSidebar"] {{
-            top: 0px !important; /* Start at very top */
-            height: 100vh !important; /* Full height */
+            top: 0px !important;
+            height: 100vh !important;
         }}
         
-        /* Shift logo right to make room for menu button */
-        .header-left {{
-            margin-left: 50px; 
-        }}
-        
-        /* Adjust header height */
+        /* Adjust Header Layout */
         .fixed-header {{
             height: 70px;
-            padding: 0 10px;
+            padding: 0 15px; /* Tighter padding */
         }}
         
-        .header-logo {{ height: 40px; margin-right: 8px; }}
-        .header-title h1 {{ font-size: 16px; }}
-        .header-btn {{ font-size: 12px; padding: 8px 12px; }}
+        /* Logo Position: Slight left margin to clear hamburger menu */
+        .header-left {{
+            margin-left: 45px; 
+            display: flex;
+            align-items: center;
+        }}
+        
+        .header-logo {{ height: 35px; margin-right: 8px; }}
+        .header-title h1 {{ font-size: 14px; margin: 0; }}
+        
+        /* Smaller "More Projects" Button */
+        .header-btn {{ font-size: 11px; padding: 6px 10px; }}
         
         .block-container {{ padding-top: 80px; }}
     }}
 
-    /* 6. CONTENT PADDING */
+    /* 7. CONTENT PADDING */
     .block-container {{
         padding-top: 110px;
         padding-bottom: 80px;
     }}
 
-    /* Header Styling Details */
+    /* General Styling */
     .header-left {{ display: flex; align-items: center; overflow: hidden; }}
     .header-logo {{ height: 60px; width: auto; margin-right: 15px; }}
     .header-title h1 {{ margin: 0; font-size: 24px; font-weight: 700; color: #000; white-space: nowrap; }}
