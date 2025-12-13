@@ -40,7 +40,7 @@ pip install networkx streamlit pandas
 This script converts the raw CSV dataset into a graph structure (`data.json`) composed of Nodes and Edges.
 
 ```bash
-python convert_csv_to_graph.py
+python data_conversion.py
 ```
 
 ### Step 4: Run the App
